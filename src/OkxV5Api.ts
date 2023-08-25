@@ -16,10 +16,19 @@ class OkxV5Api {
     }
     #httpClient: HttpClient
     #simulated = false
+    #proxyConfig ?:{
+        host:string
+        port:number
+        auth?:{
+            username:string
+            password:string
+        }
+    }
 
     constructor({
         apiBaseUrl,
         profileConfig,
+        proxyConfig,
         httpClient,
     }: {
         apiBaseUrl: string
@@ -29,10 +38,19 @@ class OkxV5Api {
             passPhrase: string
             simulated?: boolean
         }
+        proxyConfig?:{
+            host:string
+            port:number
+            auth?:{
+                username:string
+                password:string
+            }
+        }
         httpClient?: HttpClient
     }) {
         this.#apiBaseUrl = apiBaseUrl
         this.#profileConfig = profileConfig
+        this.#proxyConfig = proxyConfig
         this.#httpClient = httpClient ?? defaultHttpClient
         if (typeof profileConfig?.simulated === 'boolean') {
             this.#simulated = profileConfig.simulated
@@ -82,6 +100,7 @@ class OkxV5Api {
                 headers: { ...DEFAULT_HEADERS, ...(this.#simulated ? { 'x-simulated-trading': '1' } : {}), ...signHeaders },
                 params,
                 data,
+                proxy:{...(this.#proxyConfig?{...this.#proxyConfig}:{})},
             })
 
             if (typeof response?.data?.code === 'string' && typeof response?.data?.msg === 'string') {
